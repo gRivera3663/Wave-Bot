@@ -48,7 +48,7 @@ module.exports = (client, message) => {
         }   
         // help
         else if (command == "help"){
-            var text = "```Wave Bot Commands\n-------------------------\nVOICE CHANNEL SOUNDS\n(Must be in a voice channel for these sounds to play.)\n$driveup\n$opu\n$god\n\nTEXT CHANNEL RESPONSES\n$redcard\n\nFOR ANY ADMIN HELP PLEASE DM THE BOT, AND THE ADMINS WILL GET YOUR MESSAGE```"
+            var text = "```Wave Bot Commands\n-------------------------\nVOICE CHANNEL SOUNDS\n(Must be in a voice channel for these sounds to play.)\n$driveup\n$opu\n\nTEXT CHANNEL RESPONSES\n$redcard\n$god\n\nFOR ANY ADMIN HELP PLEASE DM THE BOT, AND THE ADMINS WILL GET YOUR MESSAGE```"
             var channel = message.channel
             channel.send(text)
 
