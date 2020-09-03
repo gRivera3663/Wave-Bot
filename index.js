@@ -1,6 +1,5 @@
 require("dotenv").config()
 const Discord = require("discord.js")
-const ytdl = require("ytdl-core")
 const fs = require("fs")
 const client = new Discord.Client()
 
@@ -12,4 +11,5 @@ fs.readdir("./events/", (err, files) => {
     })
 })
 
+// logs into the bot
 client.login(process.env.BOT_TOKEN)
