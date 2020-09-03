@@ -45,7 +45,7 @@ module.exports = (client, message) => {
         // redcard
         else if (command == "redcard"){
             message.reply("would you like to save 5% by opening a Target RedCard today?")
-        }    
+        }   
         // help
         else if (command == "help"){
             var text = "```Wave Bot Commands\n-------------------------\nVOICE CHANNEL SOUNDS\n(Must be in a voice channel for these sounds to play.)\n$driveup\n$opu\n$god\n\nTEXT CHANNEL RESPONSES\n$redcard\n\nFOR ANY ADMIN HELP PLEASE DM THE BOT, AND THE ADMINS WILL GET YOUR MESSAGE```"
@@ -60,10 +60,10 @@ module.exports = (client, message) => {
             (Must be in a voice channel for these sounds to play.)
             $driveup
             $opu
-            $god
             \n
             TEXT CHANNEL RESPONSES
             $redcard
+            $god
             \n
             FOR ANY ADMIN HELP PLEASE DM THE BOT, AND THE ADMINS WILL GET YOUR MESSAGE
             */
