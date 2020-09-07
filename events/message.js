@@ -5,7 +5,7 @@ const streamOptions = {
     quality: "highestaudio"
 }
 
-// Used to play a certain youtube link in the message sender's voice channel
+// Used to play the given youtube link in the message sender's voice channel
 function playLink(message, link){
     var voiceChannel = message.member.voice.channel
     if (!voiceChannel){
@@ -23,12 +23,29 @@ function playLink(message, link){
     } 
 }
 
+// Determines whether or not the user given is on Spotify or not. If
+// the user is on Spotify it returns the song ID of the current song.
+// Returns a 0 if nothing is found (not on Spotify).
+function isUserOnSpotify(user){
+    var songID
+    for (var i = 0; i < user.presence.activities.length; i++){
+        if(user.presence.activities[i].name === "Spotify"){
+            songID = user.presence.activities[i].syncID
+            break
+        } else {
+            songID = 0
+        }
+    }
+    return songID
+}
+
 module.exports = (client, message) => {
     // PUBLIC commands
     // (things in between "<>"s are parameters for that command)
     if (message.content.startsWith(prefix)){
         var whole = message.content.slice(prefix.length).trim().split(" ")
         var command = whole[0]
+        var user = message.author
 
         // driveup
         if (command == "driveup"){
@@ -45,30 +62,57 @@ module.exports = (client, message) => {
         // redcard
         else if (command == "redcard"){
             message.reply("would you like to save 5% by opening a Target RedCard today?")
-        }   
+        }
+        // share
+        else if (command == "share" && isUserOnSpotify(user) !== 0){
+            var url = `https://open.spotify.com/track/${isUserOnSpotify(user)}`
+            var sendTo = client.channels.fetch(process.env.SPOTIFY_SHARING_CHANNEL)
+            url.toString()
+
+            var userID = message.author.id
+
+            if (userID != process.env.BOT_ID){
+                sendTo.then( message => {
+                    var temp = "<@" + userID + "> shared this song from Spotify: " + url
+                    message.send(temp).catch(error => {console.log(error)})
+                })
+            }
+        }
+        // ERROR FOR share
+        else if (command == "share" && isUserOnSpotify(user) === 0){
+            message.reply("to use this command your Spotify must be connected to your Discord and the \"Display Spotify as your status\" setting must be turned on. You can enable this in Settings -> Connections")
+        }  
         // help
         else if (command == "help"){
-            var text = "```Wave Bot Commands\n-------------------------\nVOICE CHANNEL SOUNDS\n(Must be in a voice channel for these sounds to play.)\n$driveup\n$opu\n\nTEXT CHANNEL RESPONSES\n$redcard\n$god\n\nFOR ANY ADMIN HELP PLEASE DM THE BOT, AND THE ADMINS WILL GET YOUR MESSAGE```"
+            var text = "```Wave Bot Commands\n***NOTE: FOR ANY ADMIN HELP PLEASE DM THE BOT***\n-------------------------\nVOICE CHANNEL SOUND COMMANDS\n(Sounds that play while in a voice channel.)\n[Must be in a voice channel for these sounds to play.]\n\n$driveup\n$opu\n-------------------------\nTEXT CHANNEL RESPONSE COMMANDS\n(Bot just responds in text channel.)\n\n$redcard\n$god\n-------------------------\nCOMMANDS\n(Each command does something different. Anything in \"<>\"s are other things the command needs to work.)\n\n$share [Shares the current song you are listening to on Spotify. Spotify must be connected and visible as your status for this to work.]\n-------------------------\```"
             var channel = message.channel
             channel.send(text)
 
             // Raw Text
             /*
+
             Wave Bot Commands
+            ***NOTE: FOR ANY ADMIN HELP PLEASE DM THE BOT***
             -------------------------
-            VOICE CHANNEL SOUNDS
-            (Must be in a voice channel for these sounds to play.)
+            VOICE CHANNEL SOUND COMMANDS
+            (Sounds that play while in a voice channel.)
+            [Must be in a voice channel for these sounds to play.]
             $driveup
             $opu
             \n
-            TEXT CHANNEL RESPONSES
+            TEXT CHANNEL RESPONSE COMMANDS
+            (Bot just responds in text channel.)
             $redcard
             $god
             \n
-            FOR ANY ADMIN HELP PLEASE DM THE BOT, AND THE ADMINS WILL GET YOUR MESSAGE
+            COMMANDS
+            (Each command does something different. Anything in "<>"s are other things the command needs to work.)
+            $share [Shares the current song you are listening to on Spotify. Spotify must be connected and visible as your status for this to work.]
+
             */
         }
     }
+
 
     // ADMIN commands
     // (things in between "<>"s are parameters for that command)
@@ -76,22 +120,29 @@ module.exports = (client, message) => {
         if(message.content.startsWith(prefix)){
             var whole = message.content.slice(prefix.length).trim().split(" ")
             var command = whole[0]
-
+            
             // message <user> <message>
             if (command == "message"){
-                var user = whole[1]
-                user = user.slice(1)
-                user = user.slice(1)
-                user = user.slice(1)
-                user = user.slice(0, user.length - 1)
-                var sendTo = client.users.cache.get(user)
-                var msg = whole[2]
-                if (whole.length >= 4){
-                    for (var i = 3; i < whole.length; i++){
-                        msg += " " + whole[i]
-                    }
+                if (whole[1] == null){
+                    message.reply("You need to @ a user to use this command")
                 }
-                sendTo.send(msg).catch(error => {console.log(error)})
+                else if (whole[2] == null){
+                    message.reply("You need to include a message while using this command")
+                } else {
+                    var user = whole[1]
+                    user = user.slice(1)
+                    user = user.slice(1)
+                    user = user.slice(1)
+                    user = user.slice(0, user.length - 1)
+                    var sendTo = client.users.cache.get(user)
+                    var msg = whole[2]
+                    if (whole.length >= 4){
+                        for (var i = 3; i < whole.length; i++){
+                            msg += " " + whole[i]
+                        }
+                    }
+                    sendTo.send(msg).catch(error => {console.log(error)})
+                }
             }
             // controls
             else if (command == "controls"){
@@ -108,7 +159,6 @@ module.exports = (client, message) => {
                 -------------------------
                 MESSAGES THE USER VIA THE WAVE BOT
                 $message <@user> <message content>
-                
                 */
             }
         }
