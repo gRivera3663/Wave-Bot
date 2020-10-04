@@ -58,9 +58,7 @@ module.exports = (client, message) => {
         }
         // god
         else if (command == "god"){
-            const attachment = new MessageAttachment('https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg')
-            message.reply("this is my god!", attachment)
-            //message.reply("this is my god!", {files: ['https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg']})
+            message.channel.send("All hail Brian Cornell. :pray:", new MessageAttachment('https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg'))
         }
         // redcard
         else if (command == "redcard"){
