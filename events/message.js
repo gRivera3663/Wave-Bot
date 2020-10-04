@@ -5,7 +5,7 @@ const streamOptions = {
     quality: "highestaudio"
 }
 
-// Used to play the given youtube link in the message sender's voice channel
+// Used to play the given YouTube link in the message sender's voice channel
 function playLink(message, link){
     var voiceChannel = message.member.voice.channel
     if (!voiceChannel){
@@ -57,7 +57,7 @@ module.exports = (client, message) => {
         }
         // god
         else if (command == "god"){
-            message.reply("this is my god!", {files: ["https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg"]})
+            message.reply("this is my god!", {files: ['https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg']})
         }
         // redcard
         else if (command == "redcard"){
