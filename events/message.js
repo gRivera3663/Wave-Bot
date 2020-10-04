@@ -1,4 +1,5 @@
 const prefix = "$"
+const { MessageAttachment } = require("discord.js")
 const ytdl = require("ytdl-core")
 const streamOptions = {
     format: "audioonly",
@@ -57,7 +58,9 @@ module.exports = (client, message) => {
         }
         // god
         else if (command == "god"){
-            message.reply("this is my god!", {files: ['https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg']})
+            const attachment = new MessageAttachment('https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg')
+            message.reply("this is my god!", attachment)
+            //message.reply("this is my god!", {files: ['https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg']})
         }
         // redcard
         else if (command == "redcard"){
