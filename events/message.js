@@ -63,6 +63,11 @@ const jackLinks = [
     "https://www.youtube.com/watch?v=xk7iJr3pZ2E"
 ]
 
+const adminCommands = [
+    "controls",
+    "message"
+]
+
 // Used to play the given YouTube link in the message sender's voice channel
 function playLink(message, link){
     var voiceChannel = message.member.voice.channel
@@ -98,6 +103,12 @@ function isUserOnSpotify(user){
 }
 
 module.exports = (client, message) => {
+    // Holds the server elements
+    var server = client.guilds.fetch(process.env.SERVER_ID)
+
+    // Bot ID
+    var botID = client.user.id
+
     // PUBLIC commands
     // (things in between "<>"s are parameters for that command)
     if (message.content.startsWith(prefix)){
@@ -115,7 +126,7 @@ module.exports = (client, message) => {
         }
         // god
         else if (command == "god"){
-            message.channel.send("All hail Brian Cornell. :pray:", new MessageAttachment('https://tcbmag.com/wp-content/uploads/2020/03/Brian_Cornell_1.jpg'))
+            message.channel.send("All hail Brian Cornell. :pray:", new MessageAttachment('img/Brian_Cornell_1.jpg'))
         }
         // redcard
         else if (command == "redcard"){
@@ -124,17 +135,25 @@ module.exports = (client, message) => {
         // share
         else if (command == "share" && isUserOnSpotify(user) !== 0){
             var url = `https://open.spotify.com/track/${isUserOnSpotify(user)}`
-            var sendTo = client.channels.fetch(process.env.SPOTIFY_SHARING_CHANNEL)
-            url.toString()
+            var sendTo
+            server.then(msg => {
+                var channel = msg.channels.cache.find(channel => channel.name === 'music')
+                if (channel == undefined){
+                    message.reply("this server must have a \"music\" channel for this command to work. Please DM me to contact an admin.")
+                }else{
+                    sendTo = channel.fetch()
+                    url.toString()
 
-            var userID = message.author.id
+                    var userID = message.author.id
 
-            if (userID != process.env.BOT_ID){
-                sendTo.then( message => {
-                    var temp = "<@" + userID + "> shared this song from Spotify: " + url
-                    message.send(temp).catch(error => {console.log(error)})
-                })
-            }
+                    if (userID !== botID){
+                        sendTo.then( message => {
+                            var temp = "<@" + userID + "> shared this song from Spotify: " + url
+                            message.send(temp).catch(error => {console.log(error)})
+                        })
+                    }
+                }
+            })
         }
         // jack
         else if (command == "jack"){
@@ -185,76 +204,80 @@ module.exports = (client, message) => {
             -------------------------
             */
         }
-    }
-
-
-    // ADMIN commands
-    // (things in between "<>"s are parameters for that command)
-    if (message.channel.id === process.env.ADMIN_CHANNEL){
-        if(message.content.startsWith(prefix)){
-            var whole = message.content.slice(prefix.length).trim().split(" ")
-            var command = whole[0]
-            
-            // message <user> <message>
-            if (command == "message"){
-                if (whole[1] == null){
-                    message.reply("You need to @ a user to use this command")
-                }
-                else if (whole[2] == null){
-                    message.reply("You need to include a message while using this command")
-                } else {
-                    var user = whole[1]
-                    user = user.slice(1)
-                    user = user.slice(1)
-                    user = user.slice(1)
-                    user = user.slice(0, user.length - 1)
-                    var sendTo = client.users.cache.get(user)
-                    var msg = whole[2]
-                    if (whole.length >= 4){
-                        for (var i = 3; i < whole.length; i++){
-                            msg += " " + whole[i]
+        // ADMIN commands
+        // (things in between "<>"s are parameters for that command)
+        else if (adminCommands.includes(command)){
+            server.then(msg => {
+                var channel = msg.channels.cache.find(channel => channel.name === 'admin')
+                if (channel == undefined){
+                    message.reply("this server must have an \"admin\" channel for this command to work.")
+                }else{
+                    var admin = channel.fetch()
+                    admin.then(mess => {
+                        // message <user> <message content>
+                        if (command == "message" && message.channel.id === mess.id ){
+                            if (whole[1] == null){
+                                message.reply("You need to @ a user to use this command")
+                            }
+                            else if (whole[2] == null){
+                                message.reply("You need to include a message while using this command")
+                            } else {
+                                var user = whole[1]
+                                user = user.slice(1)
+                                user = user.slice(1)
+                                user = user.slice(1)
+                                user = user.slice(0, user.length - 1)
+                                var sendTo = client.users.cache.get(user)
+                                var msg = whole[2]
+                                if (whole.length >= 4){
+                                    for (var i = 3; i < whole.length; i++){
+                                        msg += " " + whole[i]
+                                    }
+                                }
+                                sendTo.send(msg).catch(error => {console.log(error)})
+                            }
                         }
-                    }
-                    sendTo.send(msg).catch(error => {console.log(error)})
+                        // controls
+                        else if (command == "controls" && message.channel.id === mess.id){
+                            var text = "```Admin Wave Bot Commands\n" +
+                            "(Please note that \"$controls\" is for admin controls, while \"$help\" is for public commands)\n" +
+                            "-------------------------\n" +
+                            "$message <@user> <message content> >> Messages the given user with the Wave Bot.\n" +
+                            "-------------------------```"
+
+                            mess.send(text).catch(error => {console.log(error)})
+
+                            // Raw Text
+                            /*
+                            Admin Wave Bot Commands
+                            (Please note that "$controls" is for admin help, while "$help" is for public commands)
+                            -------------------------
+                            $message <@user> <message content> >> Messages the given user with the Wave Bot.
+                            -------------------------
+                            */
+                        }
+                    })
                 }
-            }
-            // controls
-            else if (command == "controls"){
-                var text = "```Admin Wave Bot Commands\n" +
-                "(Please note that \"$controls\" is for admin controls, while \"$help\" is for public commands)\n" +
-                "-------------------------\n" +
-                "$message <@user> <message content> >> Messages the given user with the Wave Bot.\n" +
-                "-------------------------```"
-
-                var channel = client.channels.fetch(process.env.ADMIN_CHANNEL)
-                channel.then(message => {
-                    message.send(text).catch(error => {console.log(error)})
-                })
-
-                // Raw Text
-                /*
-                Admin Wave Bot Commands
-                (Please note that "$controls" is for admin help, while "$help" is for public commands)
-                -------------------------
-                $message <@user> <message content> >> Messages the given user with the Wave Bot.
-                -------------------------
-                */
-            }
+            })
         }
     }
 
     // When a user directly messages the bot, the message will be sent to the admin channel
     if(message.channel.type === "dm"){
-        var channel = client.channels.fetch(process.env.ADMIN_CHANNEL)
-        var msg = message.content.toString()
+        var dm = message.content.toString()
         var user = message.author.id
 
-        if (user != process.env.BOT_ID){
-            channel.then( message => {
-                var temp = "<@" + user + "> sent a message to the Wave Bot: " + msg
-                message.send(temp).catch(error => {console.log(error)})
-            })
-        }
+        server.then(msg => {
+            var channel = msg.channels.cache.find(channel => channel.name === 'admin')
+            if (channel == undefined){
+                var sending = client.users.cache.find(usr => usr.id === user)
+                sending.send("The Wave Bot is not able to be used for admin support at this time.").catch(error => {console.log(error)})
+            } else {
+                if (user != botID){
+                    var temp = "<@" + user + "> sent a message to the Wave Bot: " + dm
+                    channel.send(temp).catch(error => {console.log(error)})
+                }
+            }
+        })
     }
-
 }
